@@ -1,2 +1,9 @@
 backend/tmp/
 backend/log/
+
+# Ignore sensitive secrets
+backend/.env
+backend/config/master.key
+backend/config/credentials.yml.enc
+backend/config/credentials/*.key
+backend/config/credentials/*.yml.enc
