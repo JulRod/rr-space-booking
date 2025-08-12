@@ -1,0 +1,14 @@
+title = "rr-space-booking secret scanning"
+
+[allowlist]
+# Allow common non-secret patterns or test strings to avoid false positives
+regexes = [
+  "(?i)example|dummy|placeholder|testsecret|your_jwt_secret_here",
+]
+
+[report]
+redact = true
+
+[rules]
+# Use default gitleaks rules (by not disabling them); you can add custom ones below
+
