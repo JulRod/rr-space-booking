@@ -17,7 +17,8 @@
     "start:frontend": "cd frontend && npm start",
     "dev": "concurrently \"npm run start:backend\" \"npm run start:frontend\"",
     "build:frontend": "cd frontend && npm run build",
-    "typecheck:frontend": "cd frontend && npm run type-check"
+    "typecheck:frontend": "cd frontend && npm run type-check",
+    "prepare": "husky"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"

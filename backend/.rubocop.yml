@@ -1,8 +1,42 @@
+inherit_from: .rubocop_todo.yml
+
 # Omakase Ruby styling for Rails
 inherit_gem: { rubocop-rails-omakase: rubocop.yml }
 
-# Overwrite or add rules to create your own house style
-#
-# # Use `[a, [b, c]]` not `[ a, [ b, c ] ]`
-# Layout/SpaceInsideArrayLiteralBrackets:
-#   Enabled: false
+# Additional RuboCop extensions
+plugins:
+  - rubocop-performance
+  - rubocop-rspec
+
+# Enhanced formatting and linting rules
+AllCops:
+  TargetRubyVersion: 3.2
+  NewCops: enable
+  Exclude:
+    - 'vendor/**/*'
+    - 'bin/**/*'
+    - 'db/schema.rb'
+    - 'node_modules/**/*'
+    - 'tmp/**/*'
+    - 'log/**/*'
+
+# Layout and formatting rules (Ruby's "Prettier" equivalent)
+Layout/LineLength:
+  Max: 120
+  Exclude:
+    - 'config/routes.rb'
+    - 'config/initializers/**/*'
+
+Layout/MultilineMethodCallIndentation:
+  EnforcedStyle: indented
+
+Layout/ArgumentAlignment:
+  EnforcedStyle: with_first_argument
+
+# Performance optimizations
+Performance:
+  Enabled: true
+
+# RSpec specific rules
+RSpec:
+  Enabled: true

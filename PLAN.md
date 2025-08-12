@@ -98,10 +98,10 @@ For all phases we will use TDD, always have a test for new code or code changes,
 #### Tasks:
 - [x] Set up monorepo structure
 - [x] Configure Rails API (latest version 8.0+) 
-- [ ] Configure React with TypeScript (latest version 18+)
-- [ ] Set up testing frameworks (RSpec + Jest)
-- [ ] Configure linting and formatting tools
-- [ ] Set up git hooks
+- [x] Configure React with TypeScript (latest version 18+)
+- [x] Set up testing frameworks (RSpec + Jest)
+- [x] Configure linting and formatting tools
+- [x] Set up git hooks
 - [ ] Create database structure with multi-tenancy
 - [ ] Implement basic authentication (JWT)
 

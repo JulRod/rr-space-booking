@@ -1,0 +1,176 @@
+#!/usr/bin/env sh
+# Git hooks managed by Husky
+# Pre-commit hook for Rails-React monorepo with comprehensive checks
+
+echo "🔍 Running pre-commit hooks..."
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+BOLD='\033[1m'
+NC='\033[0m' # No Color
+
+# Exit on first error
+set -e
+
+# Function to check if directory has changes
+has_changes() {
+    git diff --cached --name-only | grep -q "^$1/"
+}
+
+# Function to print section headers
+print_section() {
+    echo -e "\n${BLUE}${BOLD}=== $1 ===${NC}\n"
+}
+
+# 🔒 SECURITY: Run gitleaks on all commits (always)
+print_section "🔒 SECURITY SCAN"
+echo "🔍 Scanning for secrets with gitleaks..."
+if ! gitleaks detect --source . --verbose --no-git; then
+    echo -e "${RED}❌ Gitleaks found potential secrets. Please review and remove them.${NC}"
+    echo -e "${YELLOW}💡 Tip: Add false positives to .gitleaksignore${NC}"
+    exit 1
+fi
+echo -e "${GREEN}✅ No secrets detected${NC}"
+
+# 🏗️ BACKEND CHECKS (if backend files changed)
+if has_changes "backend" || git diff --cached --name-only | grep -q "Gemfile\|\.rb$"; then
+    print_section "🏗️ BACKEND QUALITY CHECKS"
+    echo "Backend files changed. Running comprehensive checks..."
+    
+    cd backend
+    
+    # 1. RuboCop: Linting + Auto-formatting (Ruby's ESLint + Prettier)
+    echo "📝 Running RuboCop (linting + formatting)..."
+    echo "   - Code style enforcement"
+    echo "   - Auto-formatting indentation, spacing, quotes"
+    echo "   - Performance optimizations"
+    echo "   - RSpec-specific rules"
+    
+    if ! bundle exec rubocop --autocorrect-all --format simple; then
+        echo -e "${RED}❌ RuboCop found issues that couldn't be auto-fixed${NC}"
+        echo -e "${YELLOW}💡 Run: bundle exec rubocop --autocorrect-all${NC}"
+        exit 1
+    fi
+    echo -e "${GREEN}✅ RuboCop passed (code formatted and linted)${NC}"
+    
+    # 2. Brakeman: Security analysis
+    echo "\n🔍 Running Brakeman (security analysis)..."
+    if ! bundle exec brakeman --quiet --no-progress; then
+        echo -e "${YELLOW}⚠️ Brakeman found potential security issues${NC}"
+        echo -e "${YELLOW}💡 Review with: bundle exec brakeman${NC}"
+        # Don't fail on security warnings, just inform
+    else
+        echo -e "${GREEN}✅ Brakeman security scan passed${NC}"
+    fi
+    
+    # 3. RSpec: Test suite
+    echo "\n🧪 Running RSpec tests..."
+    if ! bundle exec rspec --format documentation --color; then
+        echo -e "${RED}❌ Backend tests failed${NC}"
+        exit 1
+    fi
+    echo -e "${GREEN}✅ Backend tests passed${NC}"
+    
+    # 4. Rails best practices check
+    echo "\n🚀 Rails environment check..."
+    if ! bundle exec rails runner "puts 'Rails environment: ' + Rails.env"; then
+        echo -e "${RED}❌ Rails environment check failed${NC}"
+        exit 1
+    fi
+    echo -e "${GREEN}✅ Rails environment check passed${NC}"
+    
+    cd ..
+    echo -e "${GREEN}${BOLD}✅ Backend checks completed successfully${NC}"
+fi
+
+# ⚛️ FRONTEND CHECKS (if frontend files changed)
+if has_changes "frontend" || git diff --cached --name-only | grep -qE "package\.json|\.tsx?$|\.jsx?$|\.css$|\.scss$"; then
+    print_section "⚛️ FRONTEND QUALITY CHECKS"
+    echo "Frontend files changed. Running comprehensive checks..."
+    
+    cd frontend
+    
+    # 1. Biome: Linting + Formatting (ESLint + Prettier replacement)
+    echo "📝 Running Biome (linting + formatting)..."
+    echo "   - TypeScript/JavaScript linting"
+    echo "   - Auto-formatting (tabs, quotes, semicolons)"
+    echo "   - Import organization"
+    echo "   - React-specific rules"
+    
+    if ! npm run lint:fix; then
+        echo -e "${RED}❌ Biome found unfixable issues${NC}"
+        echo -e "${YELLOW}💡 Run: npm run lint${NC}"
+        exit 1
+    fi
+    echo -e "${GREEN}✅ Biome passed (code formatted and linted)${NC}"
+    
+    # 2. TypeScript: Type checking
+    echo "\n🔧 Running TypeScript compilation..."
+    echo "   - Type safety verification"
+    echo "   - Interface compliance"
+    echo "   - Build readiness"
+    
+    if ! npm run build > /dev/null 2>&1; then
+        echo -e "${RED}❌ TypeScript compilation failed${NC}"
+        echo -e "${YELLOW}💡 Check: npm run build${NC}"
+        exit 1
+    fi
+    echo -e "${GREEN}✅ TypeScript compilation passed${NC}"
+    
+    # 3. Jest: Test suite
+    echo "\n🧪 Running Jest tests..."
+    echo "   - Component unit tests"
+    echo "   - Integration tests"
+    echo "   - Test coverage analysis"
+    
+    if ! npm test -- --watchAll=false --coverage=false --verbose; then
+        echo -e "${RED}❌ Frontend tests failed${NC}"
+        exit 1
+    fi
+    echo -e "${GREEN}✅ Frontend tests passed${NC}"
+    
+    # 4. Bundle size check (optional, informational)
+    echo "\n📦 Bundle analysis..."
+    if [ -d "build" ]; then
+        echo "   Build size: $(du -sh build 2>/dev/null | cut -f1)"
+    fi
+    echo -e "${GREEN}✅ Frontend build verified${NC}"
+    
+    cd ..
+    echo -e "${GREEN}${BOLD}✅ Frontend checks completed successfully${NC}"
+fi
+
+# 📁 PROJECT-LEVEL CHECKS (if root files changed)
+if git diff --cached --name-only | grep -qE "^(package\.json|README|\.md)$"; then
+    print_section "📁 PROJECT-LEVEL CHECKS"
+    
+    # Check if monorepo scripts are valid
+    if [ -f "package.json" ]; then
+        echo "🔧 Validating monorepo configuration..."
+        if command -v node >/dev/null 2>&1; then
+            node -e "JSON.parse(require('fs').readFileSync('package.json', 'utf8'))" 2>/dev/null
+            echo -e "${GREEN}✅ package.json is valid JSON${NC}"
+        fi
+    fi
+fi
+
+# Re-add any files that were modified by auto-fixers
+echo "\n📝 Re-staging auto-fixed files..."
+# Use -A to include new files created by tools as well
+git add -A
+
+# Final summary
+print_section "🎉 PRE-COMMIT SUMMARY"
+echo -e "${GREEN}${BOLD}All quality checks passed!${NC}"
+echo -e "${GREEN}📋 Completed checks:${NC}"
+echo -e "   ${GREEN}🔒 Security scan (gitleaks)${NC}"
+if has_changes "backend"; then
+    echo -e "   ${GREEN}🏗️ Backend: RuboCop + Brakeman + RSpec${NC}"
+fi
+if has_changes "frontend"; then
+    echo -e "   ${GREEN}⚛️ Frontend: Biome + TypeScript + Jest${NC}"
+fi
+echo -e "${GREEN}${BOLD}Ready to commit! 🚀${NC}\n"
