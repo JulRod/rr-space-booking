@@ -68,6 +68,16 @@ end
 
 group :development do
   gem "annotate"
+  
+  # Ruby LSP for VS Code support
+  gem "ruby-lsp", require: false
+  gem "ruby-lsp-rails", require: false
+  gem "ruby-lsp-rspec", require: false
+  
+  # Sorbet type checker
+  gem "sorbet", require: false
+  gem "sorbet-runtime"
+  gem "tapioca", require: false
 end
 
 group :test do

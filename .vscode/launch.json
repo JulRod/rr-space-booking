@@ -1,0 +1,26 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run RSpec Tests",
+      "type": "ruby_lsp",
+      "request": "launch",
+      "program": "bundle exec rspec",
+      "args": ["${file}"],
+      "cwd": "${workspaceFolder}/backend",
+      "env": {
+        "RAILS_ENV": "test"
+      }
+    },
+    {
+      "name": "Run All RSpec Tests",
+      "type": "ruby_lsp",
+      "request": "launch",
+      "program": "bundle exec rspec",
+      "cwd": "${workspaceFolder}/backend",
+      "env": {
+        "RAILS_ENV": "test"
+      }
+    }
+  ]
+}

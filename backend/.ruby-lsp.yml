@@ -1,0 +1,23 @@
+---
+test_framework: rspec
+bundler_gemfile: Gemfile
+enabled_features:
+  - codeActions
+  - diagnostics
+  - documentHighlights
+  - documentLink
+  - documentSymbols
+  - foldingRanges
+  - formatting
+  - hover
+  - inlayHint
+  - onTypeFormatting
+  - selectionRanges
+  - semanticHighlighting
+  - completion
+  - codeLens
+  - definition
+  - workspaceSymbol
+  - signatureHelp
+  - typeHierarchy
+formatter: rubocop
